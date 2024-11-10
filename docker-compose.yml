@@ -1,0 +1,54 @@
+version: '3'
+services:
+  # MongoDB Service
+  mongo:
+    image: mongo:5.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - app-network
+
+# Node.js API Service
+  api:
+    build:
+      context: ./backend
+    container_name: node_api
+    restart: always
+    ports:
+      - "3000:3000"  # Map the API port
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://mongo:27017/zoompoint  # Updated MongoDB connection string
+      PORT: 3000
+    networks:
+      - app-network
+ 
+  # React Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+    container_name: react_frontend
+    restart: always
+    ports:
+      - "80:80"  # Map the Nginx port
+    depends_on:
+      - api
+    environment:
+      REACT_APP_API_URL: http://api:3000  # Update to use the 'api' service name
+    networks:
+      - app-network
+
+volumes:
+  mongo_data:
+
+networks:
+  app-network:
+    driver: bridge

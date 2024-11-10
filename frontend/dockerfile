@@ -1,0 +1,35 @@
+# Stage 1: Build the React app using Node.js
+# Update Node.js version to 18 for compatibility with sharp and other libraries
+FROM node:18-alpine as build
+
+# Set the working directory for the React app
+WORKDIR /usr/src/frontend
+
+# Copy package.json and package-lock.json (if present) and install dependencies
+COPY package*.json ./
+
+RUN rm -rf node_modules && npm install
+
+RUN npm install
+
+# Copy the rest of the application source code
+COPY . .
+
+# Build the React app for production
+
+RUN npm run build
+
+# Stage 2: Serve the React app using Nginx
+FROM nginx:alpine
+
+# Copy the build output from the first stage to the Nginx web directory
+COPY --from=build /usr/src/frontend/build /usr/share/nginx/html
+
+# Copy the Nginx configuration file (optional)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80 for Nginx to serve the app
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
