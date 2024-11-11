@@ -15,18 +15,18 @@ services:
     networks:
       - app-network
 
-# Node.js API Service
+  # Node.js API Service
   api:
     build:
       context: ./backend
     container_name: node_api
     restart: always
     ports:
-      - "3000:3000"  # Map the API port
+      - "3000:3000"
     depends_on:
       - mongo
     environment:
-      MONGO_URI: mongodb://mongo:27017/zoompoint  # Updated MongoDB connection string
+      MONGO_URI: mongodb://root:example@mongo:27017/zoompoint?authSource=admin  # Updated MongoDB connection string with authentication
       PORT: 3000
     networks:
       - app-network
@@ -38,11 +38,11 @@ services:
     container_name: react_frontend
     restart: always
     ports:
-      - "80:80"  # Map the Nginx port
+      - "80:80"
     depends_on:
       - api
     environment:
-      REACT_APP_API_URL: http://api:3000  # Update to use the 'api' service name
+      REACT_APP_API_URL: http://api:3000
     networks:
       - app-network
 
